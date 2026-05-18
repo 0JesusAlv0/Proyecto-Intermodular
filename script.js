@@ -52,19 +52,19 @@ function seleccionarClase(tipo) {
 
     if (tipo === "A") {
         desde.value = "1.0.0.1";
-        hasta.value = "126.255.255.254";
+        hasta.value = "126.255.255.255";
         mascara = "255.0.0.0";
     }
 
     if (tipo === "B") {
         desde.value = "128.0.0.1";
-        hasta.value = "191.255.255.254";
+        hasta.value = "191.255.255.255";
         mascara = "255.255.0.0";
     }
 
     if (tipo === "C") {
         desde.value = "192.0.0.1";
-        hasta.value = "223.255.255.254";
+        hasta.value = "223.255.255.255";
         mascara = "255.255.255.0";
     }
 
