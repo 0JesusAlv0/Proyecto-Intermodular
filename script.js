@@ -35,11 +35,15 @@ document.getElementById("btnClaseC").onclick = function () {
 document.getElementById("btnVerificar").onclick = verificarIP;
 document.getElementById("btnGenerar").onclick = generarSubredes;
 document.getElementById("btnLimpiar").onclick = limpiar;
-document.getElementById("btnReiniciar").onclick = reiniciar;
 
 document.getElementById("btnSalir").onclick = function () {
     window.close();
-    mostrarMensaje("Salida del sistema", "Si el navegador no permite cerrar la ventana, ciérrala manualmente.", "advertencia");
+
+    mostrarMensaje(
+        "SALIR",
+        "Si el navegador no permite cerrar la ventana, ciérrala manualmente.",
+        "advertencia"
+    );
 };
 
 function seleccionarClase(tipo) {
@@ -66,17 +70,39 @@ function seleccionarClase(tipo) {
 
     mascaraSubred.value = mascara;
 
-    bloquearClases(true);
     activarIP(true);
 
     document.getElementById("btnVerificar").disabled = false;
+    document.getElementById("btnGenerar").disabled = true;
+    document.getElementById("btnLimpiar").disabled = true;
+
+    cantidadSubredes.disabled = true;
+
+    limpiarCamposIP();
+    limpiarResultados();
+    marcarClaseActiva(tipo);
+
+    tablaSubredes.innerHTML = `
+        <tr>
+            <td colspan="6" class="sin-datos">Ingrese una IP para generar subredes.</td>
+        </tr>
+    `;
 
     oct1.focus();
 
-    mostrarMensaje("Clase seleccionada", "Clase " + tipo + " activada correctamente.", "correcto");
+    mostrarMensaje(
+        "CLASE SELECCIONADA",
+        "Clase " + tipo + " activada correctamente. Puede cambiarla cuando quiera.",
+        "correcto"
+    );
 }
 
 function verificarIP() {
+    if (clase === "") {
+        mostrarMensaje("CLASE REQUERIDA", "Primero seleccione una clase de IP.", "advertencia");
+        return;
+    }
+
     let errores = [];
     let primerCampoMalo = null;
 
@@ -86,32 +112,32 @@ function verificarIP() {
     ip4 = Number(oct4.value);
 
     if (oct1.value === "" || ip1 < 0 || ip1 > 255) {
-        errores.push("Octeto 1 inválido");
+        errores.push("Octeto 1");
         oct1.value = "";
         if (primerCampoMalo === null) primerCampoMalo = oct1;
     }
 
     if (oct2.value === "" || ip2 < 0 || ip2 > 255) {
-        errores.push("Octeto 2 inválido");
+        errores.push("Octeto 2");
         oct2.value = "";
         if (primerCampoMalo === null) primerCampoMalo = oct2;
     }
 
     if (oct3.value === "" || ip3 < 0 || ip3 > 255) {
-        errores.push("Octeto 3 inválido");
+        errores.push("Octeto 3");
         oct3.value = "";
         if (primerCampoMalo === null) primerCampoMalo = oct3;
     }
 
     if (oct4.value === "" || ip4 < 0 || ip4 > 255) {
-        errores.push("Octeto 4 inválido");
+        errores.push("Octeto 4");
         oct4.value = "";
         if (primerCampoMalo === null) primerCampoMalo = oct4;
     }
 
     if (errores.length > 0) {
         mostrarMensaje(
-            "IP incompleta o incorrecta",
+            "IP INCORRECTA",
             "Se limpiaron los campos incorrectos: " + errores.join(", ") + ".",
             "error",
             primerCampoMalo
@@ -121,44 +147,64 @@ function verificarIP() {
 
     if (ip1 === 0) {
         oct1.value = "";
-        mostrarMensaje("IP no funcional", "El primer octeto no puede ser 0.", "error", oct1);
+        mostrarMensaje("IP NO FUNCIONAL", "El primer octeto no puede ser 0.", "error", oct1);
         return;
     }
 
     if (ip1 === 127) {
         oct1.value = "";
-        mostrarMensaje("IP no funcional", "El rango 127 es reservado para loopback.", "error", oct1);
+        mostrarMensaje("IP NO FUNCIONAL", "El rango 127 es reservado para loopback.", "error", oct1);
         return;
     }
 
     if (ip1 >= 224) {
         oct1.value = "";
-        mostrarMensaje("IP no funcional", "Las IP desde 224 en adelante no son Clase A, B o C normales.", "error", oct1);
+        mostrarMensaje(
+            "IP NO FUNCIONAL",
+            "Las IP desde 224 en adelante no son Clase A, B o C normales.",
+            "error",
+            oct1
+        );
         return;
     }
 
     if (clase === "A" && (ip1 < 1 || ip1 > 126)) {
         oct1.value = "";
-        mostrarMensaje("Clase incorrecta", "Para Clase A el primer octeto debe estar entre 1 y 126.", "error", oct1);
+        mostrarMensaje(
+            "CLASE INCORRECTA",
+            "Para Clase A el primer octeto debe estar entre 1 y 126.",
+            "error",
+            oct1
+        );
         return;
     }
 
     if (clase === "B" && (ip1 < 128 || ip1 > 191)) {
         oct1.value = "";
-        mostrarMensaje("Clase incorrecta", "Para Clase B el primer octeto debe estar entre 128 y 191.", "error", oct1);
+        mostrarMensaje(
+            "CLASE INCORRECTA",
+            "Para Clase B el primer octeto debe estar entre 128 y 191.",
+            "error",
+            oct1
+        );
         return;
     }
 
     if (clase === "C" && (ip1 < 192 || ip1 > 223)) {
         oct1.value = "";
-        mostrarMensaje("Clase incorrecta", "Para Clase C el primer octeto debe estar entre 192 y 223.", "error", oct1);
+        mostrarMensaje(
+            "CLASE INCORRECTA",
+            "Para Clase C el primer octeto debe estar entre 192 y 223.",
+            "error",
+            oct1
+        );
         return;
     }
 
     let errorFuncional = validarIPFuncional();
 
     if (errorFuncional !== "") {
-        mostrarMensaje("IP no funcional", errorFuncional, "error", oct4);
+        mostrarMensaje("IP NO FUNCIONAL", errorFuncional, "error", oct4);
         return;
     }
 
@@ -173,7 +219,12 @@ function verificarIP() {
 
     cantidadSubredes.disabled = false;
 
-    mostrarMensaje("IP verificada", "La dirección IP es válida y funcional. Puede generar subredes.", "correcto", cantidadSubredes);
+    mostrarMensaje(
+        "IP VERIFICADA",
+        "La dirección IP es válida y funcional. Ahora puede generar subredes.",
+        "correcto",
+        cantidadSubredes
+    );
 }
 
 function validarIPFuncional() {
@@ -227,7 +278,12 @@ function generarSubredes() {
 
     if (cantidadSubredes.value === "" || subredes <= 0) {
         cantidadSubredes.value = "";
-        mostrarMensaje("Cantidad incorrecta", "Ingrese una cantidad válida de subredes.", "advertencia", cantidadSubredes);
+        mostrarMensaje(
+            "CANTIDAD INCORRECTA",
+            "Ingrese una cantidad válida de subredes.",
+            "advertencia",
+            cantidadSubredes
+        );
         return;
     }
 
@@ -242,7 +298,12 @@ function generarSubredes() {
 
     if (bits > 6 || salto < 4) {
         cantidadSubredes.value = "";
-        mostrarMensaje("Cantidad muy alta", "Use una cantidad menor para que existan IP disponibles.", "error", cantidadSubredes);
+        mostrarMensaje(
+            "CANTIDAD MUY ALTA",
+            "Use una cantidad menor para que existan IP disponibles.",
+            "error",
+            cantidadSubredes
+        );
         return;
     }
 
@@ -260,6 +321,7 @@ function generarSubredes() {
 
     mascaraSubred.value = mascara;
     saltoRed.value = salto;
+
     tablaSubredes.innerHTML = "";
 
     for (let i = 1; i <= subredes; i++) {
@@ -306,68 +368,51 @@ function generarSubredes() {
         `;
     }
 
-    mostrarMensaje("Subredes generadas", "La tabla fue creada correctamente.", "correcto");
+    mostrarMensaje(
+        "SUBREDES GENERADAS",
+        "La tabla fue creada correctamente.",
+        "correcto"
+    );
 }
 
 function limpiar() {
-    oct1.value = "";
-    oct2.value = "";
-    oct3.value = "";
-    oct4.value = "";
-
-    direccionIP.value = "";
-    cantidadSubredes.value = "";
-    saltoRed.value = "";
+    limpiarCamposIP();
+    limpiarResultados();
 
     tablaSubredes.innerHTML = `
         <tr>
-            <td colspan="6">Ingrese una nueva IP para generar subredes.</td>
+            <td colspan="6" class="sin-datos">Ingrese una nueva IP para generar subredes.</td>
         </tr>
     `;
 
     activarIP(true);
 
     cantidadSubredes.disabled = true;
+
     document.getElementById("btnVerificar").disabled = false;
     document.getElementById("btnGenerar").disabled = true;
     document.getElementById("btnLimpiar").disabled = true;
 
-    mostrarMensaje("Datos limpiados", "Puede ingresar una nueva IP.", "correcto", oct1);
+    mostrarMensaje("DATOS LIMPIADOS", "Puede ingresar una nueva IP.", "correcto", oct1);
 }
 
-function reiniciar() {
-    clase = "";
-    mascara = "";
-
+function limpiarCamposIP() {
     oct1.value = "";
     oct2.value = "";
     oct3.value = "";
     oct4.value = "";
+}
 
-    desde.value = "";
-    hasta.value = "";
+function limpiarResultados() {
     direccionIP.value = "";
-    claseIP.value = "";
-    mascaraSubred.value = "";
     saltoRed.value = "";
     cantidadSubredes.value = "";
 
-    activarIP(false);
-    bloquearClases(false);
-
-    cantidadSubredes.disabled = true;
-
-    document.getElementById("btnVerificar").disabled = true;
-    document.getElementById("btnGenerar").disabled = true;
-    document.getElementById("btnLimpiar").disabled = true;
-
-    tablaSubredes.innerHTML = `
-        <tr>
-            <td colspan="6">Seleccione una clase IP para comenzar.</td>
-        </tr>
-    `;
-
-    mostrarMensaje("Sistema reiniciado", "Seleccione una clase IP para comenzar nuevamente.", "correcto");
+    if (clase !== "") {
+        mascaraSubred.value = mascara;
+    } else {
+        mascaraSubred.value = "";
+    }
 }
 
 function activarIP(estado) {
@@ -377,10 +422,22 @@ function activarIP(estado) {
     oct4.disabled = !estado;
 }
 
-function bloquearClases(estado) {
-    document.getElementById("btnClaseA").disabled = estado;
-    document.getElementById("btnClaseB").disabled = estado;
-    document.getElementById("btnClaseC").disabled = estado;
+function marcarClaseActiva(tipo) {
+    document.getElementById("btnClaseA").classList.remove("clase-activa");
+    document.getElementById("btnClaseB").classList.remove("clase-activa");
+    document.getElementById("btnClaseC").classList.remove("clase-activa");
+
+    if (tipo === "A") {
+        document.getElementById("btnClaseA").classList.add("clase-activa");
+    }
+
+    if (tipo === "B") {
+        document.getElementById("btnClaseB").classList.add("clase-activa");
+    }
+
+    if (tipo === "C") {
+        document.getElementById("btnClaseC").classList.add("clase-activa");
+    }
 }
 
 function mostrarMensaje(titulo, texto, tipo, campo) {
@@ -390,7 +447,7 @@ function mostrarMensaje(titulo, texto, tipo, campo) {
         <div class="mensaje-caja">
             <h3>${titulo}</h3>
             <p>${texto}</p>
-            <button id="btnAceptarMensaje">Aceptar</button>
+            <button id="btnAceptarMensaje">ACEPTAR</button>
         </div>
     `;
 

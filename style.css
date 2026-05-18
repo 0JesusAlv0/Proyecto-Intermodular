@@ -13,7 +13,8 @@ body {
 body {
     font-family: "Segoe UI", Arial, sans-serif;
     background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32%),
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.20), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.08), transparent 35%),
         linear-gradient(135deg, #020817, #06142e, #0b1b3d);
     color: #f1f5f9;
     overflow: hidden;
@@ -38,7 +39,7 @@ body {
     background: #60a5fa;
 }
 
-/* Pantalla general */
+/* Página completa */
 .app {
     width: 100%;
     height: 100vh;
@@ -57,7 +58,7 @@ body {
     padding: 9px 28px;
     background: rgba(3, 12, 37, 0.96);
     border: 1px solid #2f5fa8;
-    border-radius: 15px;
+    border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.32);
 }
 
@@ -117,7 +118,7 @@ body {
     grid-row: 2;
 }
 
-/* Zona inferior más justa */
+/* Zona inferior */
 .zona-inferior {
     display: grid;
     grid-template-columns: 30% 70%;
@@ -130,7 +131,7 @@ body {
 .panel {
     background: rgba(2, 10, 32, 0.95);
     border: 1px solid #2f5fa8;
-    border-radius: 14px;
+    border-radius: 15px;
     padding: 11px 18px;
     overflow: hidden;
     min-height: 0;
@@ -153,7 +154,7 @@ button {
     min-width: 100px;
     padding: 0 15px;
     border: 1px solid #60a5fa;
-    border-radius: 8px;
+    border-radius: 9px;
     background: linear-gradient(180deg, #2563eb, #123d82);
     color: white;
     font-size: 14px;
@@ -174,6 +175,15 @@ button:active:not(:disabled) {
 button:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+}
+
+/* Clase seleccionada */
+.clase-activa {
+    background: linear-gradient(180deg, #38bdf8, #1d4ed8);
+    border-color: #bfdbfe;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 0 14px rgba(96, 165, 250, 0.55);
 }
 
 /* Inputs */
@@ -286,7 +296,7 @@ label {
     font-weight: bold;
 }
 
-/* Resultado más corto y ordenado */
+/* Resultado */
 .panel-resultado {
     display: flex;
     flex-direction: column;
@@ -308,14 +318,31 @@ label {
     width: 100%;
 }
 
+/* Botón salir grande */
 .acciones {
     display: flex;
     justify-content: center;
-    gap: 14px;
-    margin-top: 12px;
+    align-items: center;
+    margin-top: 16px;
 }
 
-/* Tabla más corta y proporcionada */
+.btn-salir-grande {
+    width: 90%;
+    height: 48px;
+    background: linear-gradient(180deg, #dc2626, #7f1d1d);
+    border: 1px solid #fca5a5;
+    border-radius: 11px;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.btn-salir-grande:hover:not(:disabled) {
+    background: linear-gradient(180deg, #ef4444, #991b1b);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.45);
+}
+
+/* Tabla */
 .panel-tabla {
     display: flex;
     flex-direction: column;
@@ -537,6 +564,10 @@ td:nth-child(6) {
         margin-bottom: 7px;
     }
 
+    .btn-salir-grande {
+        height: 40px;
+    }
+
     .acciones {
         margin-top: 8px;
     }
@@ -601,5 +632,11 @@ td:nth-child(6) {
 
     .tabla-scroll {
         height: 300px;
+    }
+
+    .botones-clase,
+    .ip-linea,
+    .subred-linea {
+        flex-wrap: wrap;
     }
 }
