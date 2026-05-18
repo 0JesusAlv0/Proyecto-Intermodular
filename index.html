@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U.E Hispano América - Subneteo IP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="app">
+
+        <header class="header">
+            <h1>U.E "Hispano América"</h1>
+            <p>Proyecto Intermodular</p>
+        </header>
+
+        <section class="contenedor">
+
+            <section class="zona-superior">
+
+                <div class="panel panel-clases">
+                    <h2>Clases de IP</h2>
+
+                    <div class="botones-clase">
+                        <button id="btnClaseA">Clase A</button>
+                        <button id="btnClaseB">Clase B</button>
+                        <button id="btnClaseC">Clase C</button>
+                    </div>
+                </div>
+
+                <div class="panel panel-ip">
+                    <h2>Ingrese la dirección IP</h2>
+
+                    <div class="ip-linea">
+                        <input type="text" id="oct1" maxlength="3" disabled>
+                        <span>.</span>
+                        <input type="text" id="oct2" maxlength="3" disabled>
+                        <span>.</span>
+                        <input type="text" id="oct3" maxlength="3" disabled>
+                        <span>.</span>
+                        <input type="text" id="oct4" maxlength="3" disabled>
+
+                        <button id="btnVerificar" disabled>Verificar</button>
+                    </div>
+                </div>
+
+                <div class="panel panel-rangos">
+                    <h2>Rangos de la IP</h2>
+
+                    <div class="campo">
+                        <label>Desde:</label>
+                        <input type="text" id="desde" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Hasta:</label>
+                        <input type="text" id="hasta" readonly>
+                    </div>
+                </div>
+
+                <div class="panel panel-subneteo">
+                    <h2>Subneteo</h2>
+
+                    <div class="subred-linea">
+                        <label>Cantidad de Subredes:</label>
+                        <input type="text" id="cantidadSubredes" disabled>
+
+                        <button id="btnGenerar" disabled>Generar</button>
+                        <button id="btnLimpiar" disabled>Limpiar</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="zona-inferior">
+
+                <aside class="panel panel-resultado">
+                    <h2>Resultado</h2>
+
+                    <div class="campo">
+                        <label>Dirección IP:</label>
+                        <input type="text" id="direccionIP" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Clase de la IP:</label>
+                        <input type="text" id="claseIP" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Máscara de Subred:</label>
+                        <input type="text" id="mascaraSubred" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Salto de red:</label>
+                        <input type="text" id="saltoRed" readonly>
+                    </div>
+
+                    <div class="acciones">
+                        <button id="btnReiniciar">Reiniciar</button>
+                        <button id="btnSalir">Salir</button>
+                    </div>
+                </aside>
+
+                <section class="panel panel-tabla">
+                    <h2>Dirección IP de cada subred</h2>
+
+                    <div class="tabla-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Dirección IP</th>
+                                    <th>Máscara Subred</th>
+                                    <th>Primera IP Disponible</th>
+                                    <th>Última IP Disponible</th>
+                                    <th>Broadcast</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="tablaSubredes">
+                                <tr>
+                                    <td colspan="6" class="sin-datos">Seleccione una clase IP para comenzar.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <div id="mensaje" class="mensaje oculto"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
