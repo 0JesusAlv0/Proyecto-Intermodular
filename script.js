@@ -4,6 +4,8 @@ let ip1 = 0;
 let ip2 = 0;
 let ip3 = 0;
 let ip4 = 0;
+let prefijoBase = 0;
+let prefijoNuevo = 0;
 
 const oct1 = document.getElementById("oct1");
 const oct2 = document.getElementById("oct2");
@@ -20,23 +22,31 @@ const cantidadSubredes = document.getElementById("cantidadSubredes");
 const tablaSubredes = document.getElementById("tablaSubredes");
 const mensaje = document.getElementById("mensaje");
 
-document.getElementById("btnClaseA").onclick = function () {
+const btnClaseA = document.getElementById("btnClaseA");
+const btnClaseB = document.getElementById("btnClaseB");
+const btnClaseC = document.getElementById("btnClaseC");
+const btnVerificar = document.getElementById("btnVerificar");
+const btnGenerar = document.getElementById("btnGenerar");
+const btnLimpiar = document.getElementById("btnLimpiar");
+const btnSalir = document.getElementById("btnSalir");
+
+btnClaseA.onclick = function () {
     seleccionarClase("A");
 };
 
-document.getElementById("btnClaseB").onclick = function () {
+btnClaseB.onclick = function () {
     seleccionarClase("B");
 };
 
-document.getElementById("btnClaseC").onclick = function () {
+btnClaseC.onclick = function () {
     seleccionarClase("C");
 };
 
-document.getElementById("btnVerificar").onclick = verificarIP;
-document.getElementById("btnGenerar").onclick = generarSubredes;
-document.getElementById("btnLimpiar").onclick = limpiar;
+btnVerificar.onclick = verificarIP;
+btnGenerar.onclick = generarSubredes;
+btnLimpiar.onclick = limpiar;
 
-document.getElementById("btnSalir").onclick = function () {
+btnSalir.onclick = function () {
     window.close();
 
     mostrarMensaje(
@@ -54,28 +64,31 @@ function seleccionarClase(tipo) {
         desde.value = "0.0.0.0";
         hasta.value = "127.255.255.255";
         mascara = "255.0.0.0";
+        prefijoBase = 8;
     }
 
     if (tipo === "B") {
         desde.value = "128.0.0.0";
         hasta.value = "191.255.255.255";
         mascara = "255.255.0.0";
+        prefijoBase = 16;
     }
 
     if (tipo === "C") {
         desde.value = "192.0.0.0";
         hasta.value = "223.255.255.255";
         mascara = "255.255.255.0";
+        prefijoBase = 24;
     }
 
     mascaraSubred.value = mascara;
+    saltoRed.value = "";
 
     activarIP(true);
 
-    document.getElementById("btnVerificar").disabled = false;
-    document.getElementById("btnGenerar").disabled = true;
-    document.getElementById("btnLimpiar").disabled = true;
-
+    btnVerificar.disabled = false;
+    btnGenerar.disabled = true;
+    btnLimpiar.disabled = true;
     cantidadSubredes.disabled = true;
 
     limpiarCamposIP();
@@ -92,7 +105,7 @@ function seleccionarClase(tipo) {
 
     mostrarMensaje(
         "CLASE SELECCIONADA",
-        "Clase " + tipo + " activada correctamente. Puede cambiarla cuando quiera.",
+        "Clase " + tipo + " activada correctamente. Rango permitido: " + desde.value + " hasta " + hasta.value + ".",
         "correcto"
     );
 }
@@ -103,76 +116,22 @@ function verificarIP() {
         return;
     }
 
-    let errores = [];
-    let primerCampoMalo = null;
+    let datos = leerOctetos();
 
-    ip1 = Number(oct1.value);
-    ip2 = Number(oct2.value);
-    ip3 = Number(oct3.value);
-    ip4 = Number(oct4.value);
-
-    if (oct1.value === "" || ip1 < 0 || ip1 > 255) {
-        errores.push("Octeto 1");
-        oct1.value = "";
-        if (primerCampoMalo === null) primerCampoMalo = oct1;
-    }
-
-    if (oct2.value === "" || ip2 < 0 || ip2 > 255) {
-        errores.push("Octeto 2");
-        oct2.value = "";
-        if (primerCampoMalo === null) primerCampoMalo = oct2;
-    }
-
-    if (oct3.value === "" || ip3 < 0 || ip3 > 255) {
-        errores.push("Octeto 3");
-        oct3.value = "";
-        if (primerCampoMalo === null) primerCampoMalo = oct3;
-    }
-
-    if (oct4.value === "" || ip4 < 0 || ip4 > 255) {
-        errores.push("Octeto 4");
-        oct4.value = "";
-        if (primerCampoMalo === null) primerCampoMalo = oct4;
-    }
-
-    if (errores.length > 0) {
-        mostrarMensaje(
-            "IP INCORRECTA",
-            "Se limpiaron los campos incorrectos: " + errores.join(", ") + ".",
-            "error",
-            primerCampoMalo
-        );
+    if (datos === null) {
         return;
     }
 
-    if (ip1 === 0) {
-        oct1.value = "";
-        mostrarMensaje("IP NO FUNCIONAL", "El primer octeto no puede ser 0.", "error", oct1);
-        return;
-    }
+    ip1 = datos[0];
+    ip2 = datos[1];
+    ip3 = datos[2];
+    ip4 = datos[3];
 
-    if (ip1 === 127) {
-        oct1.value = "";
-        mostrarMensaje("IP NO FUNCIONAL", "El rango 127 es reservado para loopback.", "error", oct1);
-        return;
-    }
-
-    if (ip1 >= 224) {
-        oct1.value = "";
-        mostrarMensaje(
-            "IP NO FUNCIONAL",
-            "Las IP desde 224 en adelante no son Clase A, B o C normales.",
-            "error",
-            oct1
-        );
-        return;
-    }
-
-    if (clase === "A" && (ip1 < 1 || ip1 > 127)) {
+    if (clase === "A" && (ip1 < 0 || ip1 > 127)) {
         oct1.value = "";
         mostrarMensaje(
             "CLASE INCORRECTA",
-            "Para Clase A el primer octeto debe estar entre 1 y 126.",
+            "Para Clase A el primer octeto debe estar entre 0 y 127.",
             "error",
             oct1
         );
@@ -201,82 +160,76 @@ function verificarIP() {
         return;
     }
 
-    let errorFuncional = validarIPFuncional();
-
-    if (errorFuncional !== "") {
-        mostrarMensaje("IP NO FUNCIONAL", errorFuncional, "error", oct4);
-        return;
-    }
-
     direccionIP.value = ip1 + "." + ip2 + "." + ip3 + "." + ip4;
     mascaraSubred.value = mascara;
+    saltoRed.value = "Pendiente";
 
     activarIP(false);
 
-    document.getElementById("btnVerificar").disabled = true;
-    document.getElementById("btnGenerar").disabled = false;
-    document.getElementById("btnLimpiar").disabled = false;
-
+    btnVerificar.disabled = true;
+    btnGenerar.disabled = false;
+    btnLimpiar.disabled = false;
     cantidadSubredes.disabled = false;
 
     mostrarMensaje(
         "IP VERIFICADA",
-        "La dirección IP es válida y funcional. Ahora puede generar subredes.",
+        "La IP pertenece correctamente a la Clase " + clase + ". Ahora puede generar subredes.",
         "correcto",
         cantidadSubredes
     );
 }
 
-function validarIPFuncional() {
-    if (clase === "A") {
-        if (ip2 === 0 && ip3 === 0 && ip4 === 0) {
-            oct2.value = "";
-            oct3.value = "";
-            oct4.value = "";
-            return "No puede usar dirección de red. Se limpiaron los octetos 2, 3 y 4.";
+function leerOctetos() {
+    const campos = [oct1, oct2, oct3, oct4];
+    const valores = [];
+
+    for (let i = 0; i < campos.length; i++) {
+        let valor = campos[i].value.trim();
+
+        if (valor === "") {
+            mostrarMensaje(
+                "CAMPO VACÍO",
+                "El octeto " + (i + 1) + " está vacío.",
+                "error",
+                campos[i]
+            );
+            return null;
         }
 
-        if (ip2 === 255 && ip3 === 255 && ip4 === 255) {
-            oct2.value = "";
-            oct3.value = "";
-            oct4.value = "";
-            return "No puede usar dirección broadcast. Se limpiaron los octetos 2, 3 y 4.";
+        if (!/^[0-9]{1,3}$/.test(valor)) {
+            campos[i].value = "";
+            mostrarMensaje(
+                "DATO INCORRECTO",
+                "El octeto " + (i + 1) + " solo acepta números de 1 a 3 dígitos.",
+                "error",
+                campos[i]
+            );
+            return null;
         }
+
+        let numero = Number(valor);
+
+        if (numero < 0 || numero > 255) {
+            campos[i].value = "";
+            mostrarMensaje(
+                "RANGO INCORRECTO",
+                "El octeto " + (i + 1) + " debe estar entre 0 y 255.",
+                "error",
+                campos[i]
+            );
+            return null;
+        }
+
+        valores.push(numero);
     }
 
-    if (clase === "B") {
-        if (ip3 === 0 && ip4 === 0) {
-            oct3.value = "";
-            oct4.value = "";
-            return "No puede usar dirección de red. Se limpiaron los octetos 3 y 4.";
-        }
-
-        if (ip3 === 255 && ip4 === 255) {
-            oct3.value = "";
-            oct4.value = "";
-            return "No puede usar dirección broadcast. Se limpiaron los octetos 3 y 4.";
-        }
-    }
-
-    if (clase === "C") {
-        if (ip4 === 0) {
-            oct4.value = "";
-            return "No puede usar dirección de red. Se limpió el octeto 4.";
-        }
-
-        if (ip4 === 255) {
-            oct4.value = "";
-            return "No puede usar dirección broadcast. Se limpió el octeto 4.";
-        }
-    }
-
-    return "";
+    return valores;
 }
 
 function generarSubredes() {
     let subredes = Number(cantidadSubredes.value);
 
-    if (cantidadSubredes.value === "" || subredes <= 0) {
+    if (cantidadSubredes.value.trim() === "" || !Number.isInteger(subredes) || subredes <= 0) {
         cantidadSubredes.value = "";
         mostrarMensaje(
             "CANTIDAD INCORRECTA",
@@ -287,78 +240,60 @@ function generarSubredes() {
         return;
     }
 
-    let bits = 0;
-
-    while (Math.pow(2, bits) < subredes) {
-        bits++;
-    }
-
-    let valorMascara = 256 - Math.pow(2, 8 - bits);
-    let salto = 256 - valorMascara;
-
-    if (bits > 6 || salto < 4) {
+    if (subredes > 512) {
         cantidadSubredes.value = "";
         mostrarMensaje(
             "CANTIDAD MUY ALTA",
-            "Use una cantidad menor para que existan IP disponibles.",
+            "Para que la tabla no se vuelva pesada, genere máximo 512 subredes.",
+            "advertencia",
+            cantidadSubredes
+        );
+        return;
+    }
+
+    let bitsPrestados = 0;
+
+    while (Math.pow(2, bitsPrestados) < subredes) {
+        bitsPrestados++;
+    }
+
+    prefijoNuevo = prefijoBase + bitsPrestados;
+
+    if (prefijoNuevo > 30) {
+        cantidadSubredes.value = "";
+        mostrarMensaje(
+            "SIN HOSTS DISPONIBLES",
+            "La cantidad de subredes es demasiado alta y dejaría redes sin IPs útiles.",
             "error",
             cantidadSubredes
         );
         return;
     }
 
-    if (clase === "A") {
-        mascara = "255." + valorMascara + ".0.0";
-    }
-
-    if (clase === "B") {
-        mascara = "255.255." + valorMascara + ".0";
-    }
-
-    if (clase === "C") {
-        mascara = "255.255.255." + valorMascara;
-    }
-
+    mascara = obtenerMascara(prefijoNuevo);
     mascaraSubred.value = mascara;
+
+    let tamañoBloque = Math.pow(2, 32 - prefijoNuevo);
+    let salto = obtenerSalto(prefijoNuevo);
     saltoRed.value = salto;
 
+    let baseRed = obtenerRedBase();
     tablaSubredes.innerHTML = "";
 
-    for (let i = 1; i <= subredes; i++) {
-        let red = (i - 1) * salto;
-        let primera = red + 1;
-        let broadcast = red + salto - 1;
-        let ultima = broadcast - 1;
+    for (let i = 0; i < subredes; i++) {
+        let redNumero = baseRed + i * tamañoBloque;
+        let broadcastNumero = redNumero + tamañoBloque - 1;
+        let primeraNumero = redNumero + 1;
+        let ultimaNumero = broadcastNumero - 1;
 
-        let direccionRed = "";
-        let primeraIP = "";
-        let ultimaIP = "";
-        let broadcastIP = "";
-
-        if (clase === "A") {
-            direccionRed = ip1 + "." + red + ".0.0";
-            primeraIP = ip1 + "." + primera + ".0.1";
-            ultimaIP = ip1 + "." + ultima + ".255.254";
-            broadcastIP = ip1 + "." + broadcast + ".255.255";
-        }
-
-        if (clase === "B") {
-            direccionRed = ip1 + "." + ip2 + "." + red + ".0";
-            primeraIP = ip1 + "." + ip2 + "." + primera + ".1";
-            ultimaIP = ip1 + "." + ip2 + "." + ultima + ".254";
-            broadcastIP = ip1 + "." + ip2 + "." + broadcast + ".255";
-        }
-
-        if (clase === "C") {
-            direccionRed = ip1 + "." + ip2 + "." + ip3 + "." + red;
-            primeraIP = ip1 + "." + ip2 + "." + ip3 + "." + primera;
-            ultimaIP = ip1 + "." + ip2 + "." + ip3 + "." + ultima;
-            broadcastIP = ip1 + "." + ip2 + "." + ip3 + "." + broadcast;
-        }
+        let direccionRed = numeroAIP(redNumero);
+        let primeraIP = numeroAIP(primeraNumero);
+        let ultimaIP = numeroAIP(ultimaNumero);
+        let broadcastIP = numeroAIP(broadcastNumero);
 
         tablaSubredes.innerHTML += `
             <tr>
-                <td>${i}</td>
+                <td>${i + 1}</td>
                 <td>${direccionRed}</td>
                 <td>${mascara}</td>
                 <td>${primeraIP}</td>
@@ -370,9 +305,69 @@ function generarSubredes() {
 
     mostrarMensaje(
         "SUBREDES GENERADAS",
-        "La tabla fue creada correctamente.",
+        "Se generaron " + subredes + " subredes correctamente con máscara " + mascara + ".",
         "correcto"
     );
+}
+
+function obtenerRedBase() {
+    if (clase === "A") {
+        return ipANumero(ip1, 0, 0, 0);
+    }
+
+    if (clase === "B") {
+        return ipANumero(ip1, ip2, 0, 0);
+    }
+
+    if (clase === "C") {
+        return ipANumero(ip1, ip2, ip3, 0);
+    }
+
+    return 0;
+}
+
+function ipANumero(a, b, c, d) {
+    return (((a * 256) + b) * 256 + c) * 256 + d;
+}
+
+function numeroAIP(numero) {
+    let a = Math.floor(numero / 16777216) % 256;
+    let b = Math.floor(numero / 65536) % 256;
+    let c = Math.floor(numero / 256) % 256;
+    let d = numero % 256;
+
+    return a + "." + b + "." + c + "." + d;
+}
+
+function obtenerMascara(prefijo) {
+    let octetosMascara = [];
+    let bits = prefijo;
+
+    for (let i = 0; i < 4; i++) {
+        if (bits >= 8) {
+            octetosMascara.push(255);
+            bits -= 8;
+        } else if (bits > 0) {
+            octetosMascara.push(256 - Math.pow(2, 8 - bits));
+            bits = 0;
+        } else {
+            octetosMascara.push(0);
+        }
+    }
+
+    return octetosMascara.join(".");
+}
+
+function obtenerSalto(prefijo) {
+    let posicion = Math.floor(prefijo / 8);
+    let residuo = prefijo % 8;
+
+    if (residuo === 0) {
+        return "1 en el octeto " + posicion;
+    }
+
+    let salto = Math.pow(2, 8 - residuo);
+    return salto + " en el octeto " + (posicion + 1);
 }
 
 function limpiar() {
@@ -389,9 +384,9 @@ function limpiar() {
 
     cantidadSubredes.disabled = true;
 
-    document.getElementById("btnVerificar").disabled = false;
-    document.getElementById("btnGenerar").disabled = true;
-    document.getElementById("btnLimpiar").disabled = true;
+    btnVerificar.disabled = false;
+    btnGenerar.disabled = true;
+    btnLimpiar.disabled = true;
 
     mostrarMensaje("DATOS LIMPIADOS", "Puede ingresar una nueva IP.", "correcto", oct1);
 }
@@ -423,20 +418,20 @@ function activarIP(estado) {
 }
 
 function marcarClaseActiva(tipo) {
-    document.getElementById("btnClaseA").classList.remove("clase-activa");
-    document.getElementById("btnClaseB").classList.remove("clase-activa");
-    document.getElementById("btnClaseC").classList.remove("clase-activa");
+    btnClaseA.classList.remove("clase-activa");
+    btnClaseB.classList.remove("clase-activa");
+    btnClaseC.classList.remove("clase-activa");
 
     if (tipo === "A") {
-        document.getElementById("btnClaseA").classList.add("clase-activa");
+        btnClaseA.classList.add("clase-activa");
     }
 
     if (tipo === "B") {
-        document.getElementById("btnClaseB").classList.add("clase-activa");
+        btnClaseB.classList.add("clase-activa");
     }
 
     if (tipo === "C") {
-        document.getElementById("btnClaseC").classList.add("clase-activa");
+        btnClaseC.classList.add("clase-activa");
     }
 }
 
@@ -469,6 +464,10 @@ function soloNumeros(input) {
         if (input !== cantidadSubredes && input.value.length > 3) {
             input.value = input.value.slice(0, 3);
         }
+
+        if (input === cantidadSubredes && input.value.length > 4) {
+            input.value = input.value.slice(0, 4);
+        }
     };
 }
 
@@ -477,3 +476,15 @@ soloNumeros(oct2);
 soloNumeros(oct3);
 soloNumeros(oct4);
 soloNumeros(cantidadSubredes);
+
+activarIP(false);
+btnVerificar.disabled = true;
+btnGenerar.disabled = true;
+btnLimpiar.disabled = true;
+cantidadSubredes.disabled = true;
+
+tablaSubredes.innerHTML = `
+    <tr>
+        <td colspan="6" class="sin-datos">Seleccione una clase para comenzar.</td>
+    </tr>
+`;
