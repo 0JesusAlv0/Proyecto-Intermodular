@@ -7,6 +7,8 @@ let ip4 = 0;
 let prefijoBase = 0;
 let prefijoNuevo = 0;
 
+const MAX_FILAS_MOSTRADAS = 5000;
+
 const oct1 = document.getElementById("oct1");
 const oct2 = document.getElementById("oct2");
 const oct3 = document.getElementById("oct3");
@@ -103,9 +105,11 @@ function seleccionarClase(tipo) {
 
     oct1.focus();
 
+    let maximo = obtenerMaximoSubredes();
+
     mostrarMensaje(
         "CLASE SELECCIONADA",
-        "Clase " + tipo + " activada correctamente. Rango permitido: " + desde.value + " hasta " + hasta.value + ".",
+        "Clase " + tipo + " activada. Rango permitido: " + desde.value + " hasta " + hasta.value + ". Subredes posibles: " + maximo + ".",
         "correcto"
     );
 }
@@ -162,7 +166,7 @@ function verificarIP() {
 
     direccionIP.value = ip1 + "." + ip2 + "." + ip3 + "." + ip4;
     mascaraSubred.value = mascara;
-    saltoRed.value = "Pendiente";
+    saltoRed.value = "";
 
     activarIP(false);
 
@@ -228,6 +232,7 @@ function leerOctetos() {
 
 function generarSubredes() {
     let subredes = Number(cantidadSubredes.value);
+    let maximoSubredes = obtenerMaximoSubredes();
 
     if (cantidadSubredes.value.trim() === "" || !Number.isInteger(subredes) || subredes <= 0) {
         cantidadSubredes.value = "";
@@ -240,12 +245,12 @@ function generarSubredes() {
         return;
     }
 
-    if (subredes > 512) {
+    if (subredes > maximoSubredes) {
         cantidadSubredes.value = "";
         mostrarMensaje(
-            "CANTIDAD MUY ALTA",
-            "Para que la tabla no se vuelva pesada, genere máximo 512 subredes.",
-            "advertencia",
+            "LÍMITE DE SUBREDES",
+            "Para la Clase " + clase + " el máximo posible es " + maximoSubredes + " subredes.",
+            "error",
             cantidadSubredes
         );
         return;
@@ -263,7 +268,7 @@ function generarSubredes() {
         cantidadSubredes.value = "";
         mostrarMensaje(
             "SIN HOSTS DISPONIBLES",
-            "La cantidad de subredes es demasiado alta y dejaría redes sin IPs útiles.",
+            "La cantidad ingresada dejaría subredes sin hosts útiles.",
             "error",
             cantidadSubredes
         );
@@ -273,16 +278,24 @@ function generarSubredes() {
     mascara = obtenerMascara(prefijoNuevo);
     mascaraSubred.value = mascara;
 
-    let tamañoBloque = Math.pow(2, 32 - prefijoNuevo);
+    let tamanoBloque = Math.pow(2, 32 - prefijoNuevo);
     let salto = obtenerSalto(prefijoNuevo);
     saltoRed.value = salto;
 
     let baseRed = obtenerRedBase();
+    let filasAMostrar = subredes;
+
+    if (subredes > MAX_FILAS_MOSTRADAS) {
+        filasAMostrar = MAX_FILAS_MOSTRADAS;
+    }
+
     tablaSubredes.innerHTML = "";
 
-    for (let i = 0; i < subredes; i++) {
-        let redNumero = baseRed + i * tamañoBloque;
-        let broadcastNumero = redNumero + tamañoBloque - 1;
+    let contenidoTabla = "";
+
+    for (let i = 0; i < filasAMostrar; i++) {
+        let redNumero = baseRed + i * tamanoBloque;
+        let broadcastNumero = redNumero + tamanoBloque - 1;
         let primeraNumero = redNumero + 1;
         let ultimaNumero = broadcastNumero - 1;
 
@@ -291,7 +304,7 @@ function generarSubredes() {
         let ultimaIP = numeroAIP(ultimaNumero);
         let broadcastIP = numeroAIP(broadcastNumero);
 
-        tablaSubredes.innerHTML += `
+        contenidoTabla += `
             <tr>
                 <td>${i + 1}</td>
                 <td>${direccionRed}</td>
@@ -303,11 +316,35 @@ function generarSubredes() {
         `;
     }
 
-    mostrarMensaje(
-        "SUBREDES GENERADAS",
-        "Se generaron " + subredes + " subredes correctamente con máscara " + mascara + ".",
-        "correcto"
-    );
+    if (subredes > MAX_FILAS_MOSTRADAS) {
+        contenidoTabla += `
+            <tr>
+                <td colspan="6" class="sin-datos">
+                    Vista previa limitada: se muestran ${MAX_FILAS_MOSTRADAS} de ${subredes} subredes para evitar que el navegador se congele.
+                </td>
+            </tr>
+        `;
+    }
+
+    tablaSubredes.innerHTML = contenidoTabla;
+
+    if (subredes > MAX_FILAS_MOSTRADAS) {
+        mostrarMensaje(
+            "SUBREDES CALCULADAS",
+            "Se calcularon " + subredes + " subredes posibles, pero se muestran solo " + MAX_FILAS_MOSTRADAS + " para cuidar el rendimiento.",
+            "correcto"
+        );
+    } else {
+        mostrarMensaje(
+            "SUBREDES GENERADAS",
+            "Se generaron " + subredes + " subredes correctamente con salto de red " + salto + ".",
+            "correcto"
+        );
+    }
+}
+
+function obtenerMaximoSubredes() {
+    return Math.pow(2, 30 - prefijoBase);
 }
 
 function obtenerRedBase() {
@@ -359,15 +396,13 @@ function obtenerMascara(prefijo) {
 }
 
 function obtenerSalto(prefijo) {
-    let posicion = Math.floor(prefijo / 8);
     let residuo = prefijo % 8;
 
     if (residuo === 0) {
-        return "1 en el octeto " + posicion;
+        return 1;
     }
 
-    let salto = Math.pow(2, 8 - residuo);
-    return salto + " en el octeto " + (posicion + 1);
+    return Math.pow(2, 8 - residuo);
 }
 
 function limpiar() {
@@ -465,8 +500,8 @@ function soloNumeros(input) {
             input.value = input.value.slice(0, 3);
         }
 
-        if (input === cantidadSubredes && input.value.length > 4) {
-            input.value = input.value.slice(0, 4);
+        if (input === cantidadSubredes && input.value.length > 8) {
+            input.value = input.value.slice(0, 8);
         }
     };
 }
