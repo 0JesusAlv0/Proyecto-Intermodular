@@ -51,19 +51,19 @@ function seleccionarClase(tipo) {
     claseIP.value = tipo;
 
     if (tipo === "A") {
-        desde.value = "1.0.0.1";
-        hasta.value = "126.255.255.255";
+        desde.value = "0.0.0.0";
+        hasta.value = "127.255.255.255";
         mascara = "255.0.0.0";
     }
 
     if (tipo === "B") {
-        desde.value = "128.0.0.1";
+        desde.value = "128.0.0.0";
         hasta.value = "191.255.255.255";
         mascara = "255.255.0.0";
     }
 
     if (tipo === "C") {
-        desde.value = "192.0.0.1";
+        desde.value = "192.0.0.0";
         hasta.value = "223.255.255.255";
         mascara = "255.255.255.0";
     }
@@ -168,7 +168,7 @@ function verificarIP() {
         return;
     }
 
-    if (clase === "A" && (ip1 < 1 || ip1 > 126)) {
+    if (clase === "A" && (ip1 < 1 || ip1 > 127)) {
         oct1.value = "";
         mostrarMensaje(
             "CLASE INCORRECTA",
